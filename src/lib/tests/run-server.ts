@@ -9,7 +9,7 @@ import {
 import { CV_TEMPLATES, parseTemplateId } from "@/lib/cv/templates";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import type { createClient } from "@/lib/supabase/server";
-import type { VisualCheck } from "@/lib/tests/types";
+import type { LocalizedText, VisualCheck } from "@/lib/tests/types";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -17,14 +17,13 @@ function check(
   id: VisualCheck["id"],
   group: VisualCheck["group"],
   ok: boolean,
-  pass: string,
-  fail: string,
+  detail: LocalizedText,
 ): VisualCheck {
   return {
     id,
     group,
     status: ok ? "pass" : "fail",
-    detail: ok ? pass : fail,
+    detail,
   };
 }
 
@@ -61,8 +60,7 @@ export async function runServerChecks(
       ? true
       : parsed.length === (cvs?.length ?? 0) && parsed.every(isValidCv);
 
-  const ids = CV_TEMPLATES.map((item) => item.id);
-  const uniqueIds = new Set(ids);
+  const uniqueIds = new Set(CV_TEMPLATES.map((item) => item.id));
   const templatesOk =
     CV_TEMPLATES.length === 11 &&
     uniqueIds.size === 11 &&
@@ -83,74 +81,124 @@ export async function runServerChecks(
 
   const file = cvFileName("Fernando Soto · Full-Stack", "Andrés");
   const pdfNameOk = file.endsWith(".pdf") && !/\s/.test(file);
+  const cvCount = cvs?.length ?? 0;
 
   return [
-    check(
-      "session",
-      "auth",
-      Boolean(user.id && user.email),
-      `${user.email}`,
-      "No hay usuario en la sesión.",
-    ),
+    check("session", "auth", Boolean(user.id && user.email), {
+      en: user.email ?? "Signed in.",
+      es: user.email ?? "Sesión iniciada.",
+    }),
     check(
       "env",
       "auth",
       env.configured && env.url.includes("supabase.co"),
-      "NEXT_PUBLIC_SUPABASE_URL y la publishable key están definidas.",
-      "Faltan las variables de Supabase.",
+      env.configured
+        ? {
+            en: "The public server URL and key are defined.",
+            es: "La dirección pública del servidor y la clave están definidas.",
+          }
+        : {
+            en: "The server variables are missing.",
+            es: "Faltan las variables del servidor.",
+          },
     ),
     check(
       "profile",
       "data",
       Boolean(profile?.id === user.id && !profileError),
-      profile?.email
-        ? `profiles.id coincide con auth.users (${profile.email}).`
-        : "Perfil encontrado.",
-      profileError?.message || "No hay fila en profiles para esta cuenta.",
+      profile && !profileError
+        ? {
+            en: `The profile id matches this account${profile.email ? ` (${profile.email})` : ""}.`,
+            es: `El identificador del perfil coincide con esta cuenta${profile.email ? ` (${profile.email})` : ""}.`,
+          }
+        : {
+            en: "There is no profile row for this account.",
+            es: "No hay fila de perfil para esta cuenta.",
+          },
     ),
-    check(
-      "rlsRead",
-      "data",
-      !cvsError && !foreignRow,
-      `${cvs?.length ?? 0} CV(s) de este user_id. Ninguna fila ajena.`,
-      cvsError?.message || "La consulta devolvió filas de otro usuario.",
-    ),
+    check("rlsRead", "data", !cvsError && !foreignRow, {
+      en: cvsError
+        ? "The CV query failed."
+        : foreignRow
+          ? "The query returned a row from another user."
+          : `${cvCount} CV(s) for this account. No foreign rows.`,
+      es: cvsError
+        ? "Falló la consulta de currículums."
+        : foreignRow
+          ? "La consulta devolvió una fila de otra cuenta."
+          : `${cvCount} currículum(s) de esta cuenta. Ninguna fila ajena.`,
+    }),
     check(
       "storedSchema",
       "schema",
       schemaOk,
-      cvs?.length
-        ? `${parsed.length} documento(s) parseados como CvData.`
-        : "Sin CVs aún; el parser y el contrato siguen disponibles.",
-      "Algún CV guardado no cumple el contrato CvData.",
+      schemaOk
+        ? cvCount
+          ? {
+              en: `${parsed.length} saved document(s) match the résumé contract.`,
+              es: `${parsed.length} documento(s) guardado(s) cumplen el contrato del currículum.`,
+            }
+          : {
+              en: "No CVs yet; the parser and contract are still available.",
+              es: "Aún no hay currículums; el análisis y el contrato siguen disponibles.",
+            }
+        : {
+            en: "A saved CV does not match the résumé contract.",
+            es: "Algún currículum guardado no cumple el contrato.",
+          },
     ),
     check(
       "templates",
       "schema",
       templatesOk,
-      `${CV_TEMPLATES.length} ids únicos. parseTemplateId("no-existe") → folio.`,
-      "Faltan plantillas o el fallback de id no funciona.",
+      templatesOk
+        ? {
+            en: `${CV_TEMPLATES.length} unique ids. An unknown id falls back to Harvard.`,
+            es: `${CV_TEMPLATES.length} identificadores únicos. Uno desconocido cae a Harvard.`,
+          }
+        : {
+            en: "Templates are missing or the unknown-id fallback failed.",
+            es: "Faltan plantillas o el respaldo de identificador no funciona.",
+          },
     ),
     check(
       "factories",
       "schema",
       factoriesOk,
-      "createDefaultCvData y el CV de ejemplo cumplen CvData.",
-      "Las fábricas de CV no cumplen el esquema.",
+      factoriesOk
+        ? {
+            en: "The empty CV and the sample CV match the résumé contract.",
+            es: "El currículum vacío y el de ejemplo cumplen el contrato.",
+          }
+        : {
+            en: "The CV factories do not match the contract.",
+            es: "Las fábricas de currículum no cumplen el contrato.",
+          },
     ),
     check(
       "pdfName",
       "export",
       pdfNameOk,
-      file,
-      "cvFileName no sanitizó el nombre.",
+      pdfNameOk
+        ? { en: file, es: file }
+        : {
+            en: "The PDF filename was not cleaned.",
+            es: "No se limpió el nombre del archivo PDF.",
+          },
     ),
     check(
       "a4",
       "ui",
       A4_WIDTH_PX === 794 && A4_HEIGHT_PX === 1123,
-      `${A4_WIDTH_PX}×${A4_HEIGHT_PX} px.`,
-      "Las constantes A4 no coinciden con la hoja.",
+      A4_WIDTH_PX === 794 && A4_HEIGHT_PX === 1123
+        ? {
+            en: `${A4_WIDTH_PX}×${A4_HEIGHT_PX} px.`,
+            es: `${A4_WIDTH_PX} por ${A4_HEIGHT_PX} píxeles.`,
+          }
+        : {
+            en: "The A4 constants do not match the sheet.",
+            es: "Las medidas A4 no coinciden con la hoja.",
+          },
     ),
   ];
 }

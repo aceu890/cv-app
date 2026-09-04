@@ -27,7 +27,7 @@ export type DocCopy = {
 export const DOC_COPY: Record<DocLocale, DocCopy> = {
   en: {
     kicker: "Technical documentation",
-    title: "How Folio is built",
+    title: "How CV FORGE is built",
     lead: "A cloud résumé editor with Google sign-in, ten layouts, and A4 PDF export. This page is the product brief for recruiters and engineers reviewing the stack.",
     localeLabel: "English",
     toc: "On this page",
@@ -39,7 +39,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
         blocks: [
           {
             type: "p",
-            text: "Folio is a full-stack web product: authenticated users create private CVs, switch templates, and export a PDF that matches the preview. There is no public résumé sharing and no admin panel. One account owns many documents.",
+            text: "CV FORGE is a full-stack web product: users create private CVs, switch templates, and export a PDF that matches the preview. There is no public résumé sharing and no admin panel. One account owns many documents.",
           },
           {
             type: "table",
@@ -222,7 +222,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
   },
   es: {
     kicker: "Documentación técnica",
-    title: "De qué está hecha Folio",
+    title: "De qué está hecha CV FORGE",
     lead: "Editor de currículums en la nube con Google, diez plantillas y exportación PDF A4. Esta página es el brief de producto para reclutadores e ingenieros que revisan el stack.",
     localeLabel: "Español",
     toc: "En esta página",
@@ -234,7 +234,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
         blocks: [
           {
             type: "p",
-            text: "Folio es un producto web full-stack: el usuario autenticado crea CVs privados, cambia de plantilla y exporta un PDF igual a la vista previa. No hay CVs públicos ni panel de administración. Una cuenta tiene muchos documentos.",
+            text: "CV FORGE es un producto web full-stack: el usuario crea CVs privados, cambia de plantilla y exporta un PDF igual a la vista previa. No hay CVs públicos ni panel de administración. Una cuenta tiene muchos documentos.",
           },
           {
             type: "table",

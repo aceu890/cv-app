@@ -1133,14 +1133,6 @@ function splitDisplayName(name: string) {
   };
 }
 
-function spaceLetters(value: string) {
-  return value
-    .trim()
-    .split(/\s+/)
-    .map((word) => word.split("").join(" "))
-    .join("   ");
-}
-
 function skillGroups(skills: string[]) {
   return skills.map((skill) => {
     const index = skill.indexOf(":");
@@ -1160,11 +1152,15 @@ function skillGroups(skills: string[]) {
 function ArrowList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <ul className="mt-1 space-y-0.5">
+    <ul className="mt-1.5 space-y-1">
       {items.map((line, index) => (
         <li key={`${line}-${index}`} className="flex gap-1.5">
-          <span className="mt-px shrink-0 text-[10px] text-[#1a2744]">▸</span>
-          <span>{line}</span>
+          <span className="mt-px shrink-0 text-[13px] leading-[1.45] text-[#2e7d7b]">
+            ▸
+          </span>
+          <span className="text-[13.5px] leading-[1.45] text-[#222222]">
+            {line}
+          </span>
         </li>
       ))}
     </ul>
@@ -1181,21 +1177,35 @@ function DossierHeading({
   if (tone === "side") {
     return (
       <div className="mt-6">
-        <p className="text-[8.5px] font-semibold tracking-[0.22em] text-[#c4a574] uppercase">
-          {spaceLetters(String(children))}
+        <p className="text-[12px] font-bold tracking-[0.28em] text-white uppercase">
+          {children}
         </p>
-        <div className="mt-1.5 h-px bg-[#c4a574]/45" />
+        <div className="mt-1.5 h-px bg-[#2e7d7b]" />
       </div>
     );
   }
 
   return (
-    <div className="mb-2.5">
-      <p className="text-[10px] font-semibold tracking-[0.2em] text-[#1a2744] uppercase">
+    <div className="mb-3">
+      <p className="text-[14.5px] font-bold uppercase text-[#222222]">
         {children}
       </p>
-      <div className="mt-1 h-px bg-[#c4a574]" />
+      <div className="mt-1 h-px bg-[#2e7d7b]" />
     </div>
+  );
+}
+
+function DossierMeta({
+  company,
+  location,
+}: {
+  company: string;
+  location: string;
+}) {
+  const parts = [company, location].filter(Boolean);
+  if (parts.length === 0) return null;
+  return (
+    <span className="font-bold text-[#2e7d7b]"> — {parts.join(" — ")}</span>
   );
 }
 
@@ -1204,22 +1214,22 @@ function DossierLayout({ model }: { model: PreviewModel }) {
   const groups = skillGroups(model.skills);
 
   return (
-    <article className="cv-page flex bg-[#f4f1eb] text-[10.5px] leading-[1.25] text-[#2a2622]">
-      <aside className="flex w-[34%] shrink-0 flex-col bg-[#1a2744] px-5 py-7 text-[#e8e2d6]">
-        <h1 className="text-[20px] leading-[1.08] font-semibold tracking-tight text-white uppercase">
-          <span className="block">{first}</span>
-          {last ? <span className="block">{last}</span> : null}
+    <article className="cv-page flex bg-white font-sans text-[13.5px] leading-[1.5] text-[#222222]">
+      <aside className="flex w-[28%] shrink-0 flex-col bg-[#1e2a38] px-[25px] py-8 text-[#d7e1ea]">
+        <h1 className="text-[20px] leading-[1.32] font-bold uppercase">
+          <span className="block text-white">{first}</span>
+          {last ? <span className="block text-[#2e7d7b]">{last}</span> : null}
         </h1>
         {model.title ? (
-          <p className="mt-3 text-[8px] font-medium tracking-[0.18em] text-[#c4a574] uppercase">
-            {spaceLetters(model.title)}
+          <p className="mt-5 text-[11px] font-medium tracking-[0.22em] text-[#2e7d7b] uppercase">
+            {model.title}
           </p>
         ) : null}
 
         {model.contacts.length > 0 ? (
           <div>
             <DossierHeading tone="side">Contacto</DossierHeading>
-            <div className="mt-2.5 space-y-1.5 text-[10px] wrap-break-word">
+            <div className="mt-3 space-y-1.5 text-[12.5px] leading-[1.45] wrap-break-word">
               {model.contacts.map((item) => (
                 <p key={item}>{item}</p>
               ))}
@@ -1230,15 +1240,17 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         {groups.length > 0 ? (
           <div>
             <DossierHeading tone="side">Habilidades técnicas</DossierHeading>
-            <div className="mt-2.5 space-y-2.5">
+            <div className="mt-3 space-y-2.5">
               {groups.map((group) => (
                 <div key={`${group.label}-${group.items}`}>
                   {group.label ? (
-                    <p className="text-[10px] font-semibold text-white">
+                    <p className="text-[12.5px] font-bold text-white">
                       {group.label}
                     </p>
                   ) : null}
-                  <p className="text-[10px] text-[#d4cbb8]">{group.items}</p>
+                  <p className="text-[12.5px] leading-[1.4] text-[#d7e1ea]">
+                    {group.items}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1248,7 +1260,7 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         {model.languages.length > 0 ? (
           <div>
             <DossierHeading tone="side">Idiomas</DossierHeading>
-            <div className="mt-2.5 space-y-1 text-[10.5px]">
+            <div className="mt-3 space-y-1 text-[12.5px]">
               {model.languages.map((item) => (
                 <p key={item.id}>
                   {item.name}
@@ -1262,20 +1274,22 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         {model.education.length > 0 ? (
           <div>
             <DossierHeading tone="side">Educación</DossierHeading>
-            <div className="mt-2.5 space-y-3">
+            <div className="mt-3 space-y-3">
               {model.education.map((item) => (
                 <div key={item.id}>
                   {item.degree ? (
-                    <p className="font-semibold text-white">{item.degree}</p>
+                    <p className="text-[12.5px] leading-[1.4] font-bold text-white">
+                      {item.degree}
+                    </p>
                   ) : null}
                   {item.school ? (
-                    <p className="text-[#d4cbb8]">{item.school}</p>
+                    <p className="text-[12.5px] text-[#d7e1ea]">{item.school}</p>
                   ) : null}
                   {item.year ? (
-                    <p className="text-[10px] text-[#c4a574]">{item.year}</p>
+                    <p className="text-[12.5px] text-[#d7e1ea]">{item.year}</p>
                   ) : null}
                   {item.details ? (
-                    <p className="mt-0.5 text-[10px] text-[#d4cbb8]">
+                    <p className="mt-0.5 text-[12px] text-[#d7e1ea]">
                       {item.details}
                     </p>
                   ) : null}
@@ -1288,7 +1302,7 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         {model.certifications.length > 0 ? (
           <div>
             <DossierHeading tone="side">Cursos</DossierHeading>
-            <div className="mt-2.5 space-y-1.5 text-[10px]">
+            <div className="mt-3 space-y-1.5 text-[12.5px]">
               {model.certifications.map((item) => (
                 <p key={item.id}>
                   {item.name}
@@ -1301,28 +1315,32 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         ) : null}
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col px-6 py-7">
+      <div className="flex min-w-0 flex-1 flex-col px-8 py-8">
         {model.summary ? (
-          <section className="mb-5">
+          <section className="mb-6">
             <DossierHeading tone="main">Perfil profesional</DossierHeading>
-            <p className="whitespace-pre-wrap text-[#3f3a34]">{model.summary}</p>
+            <p className="whitespace-pre-wrap text-[14px] leading-[1.52] text-[#222222]">
+              {model.summary}
+            </p>
           </section>
         ) : null}
 
         {model.experience.length > 0 ? (
-          <section className="mb-5">
+          <section className="mb-6">
             <DossierHeading tone="main">Experiencia profesional</DossierHeading>
-            <div className="space-y-3.5">
+            <div className="space-y-4">
               {model.experience.map((item) => (
                 <div key={item.id}>
-                  <p className="font-semibold text-[#1a2744]">
-                    {[item.role, item.company, item.location]
-                      .filter(Boolean)
-                      .join(" — ")}
+                  <p className="text-[14.5px] leading-[1.35] font-bold text-[#222222]">
+                    {item.role}
+                    <DossierMeta
+                      company={item.company}
+                      location={item.location}
+                    />
                   </p>
                   {item.dates ? (
-                    <p className="mt-0.5 text-[9.5px] tracking-[0.12em] text-[#8a7a5c] uppercase">
-                      {item.dates}
+                    <p className="mt-0.5 text-[11px] tracking-[0.08em] text-[#909090] uppercase">
+                      {item.dates.replace(/\./g, "")}
                     </p>
                   ) : null}
                   <ArrowList items={item.highlights} />
@@ -1333,20 +1351,18 @@ function DossierLayout({ model }: { model: PreviewModel }) {
         ) : null}
 
         {model.projects.length > 0 ? (
-          <section className="mb-5">
+          <section className="mb-6">
             <DossierHeading tone="main">Proyectos</DossierHeading>
             {model.projects.map((item) => (
               <div key={item.id} className="mb-2">
-                <p className="font-semibold text-[#1a2744]">{item.name}</p>
+                <p className="text-[14.5px] font-bold text-[#222222]">
+                  {item.name}
+                </p>
                 <ArrowList items={item.bullets} />
               </div>
             ))}
           </section>
         ) : null}
-
-        <p className="mt-auto pt-4 text-[9.5px] text-[#7a7368]">
-          Referencias y proyectos adicionales disponibles a petición.
-        </p>
       </div>
     </article>
   );

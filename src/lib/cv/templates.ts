@@ -53,7 +53,7 @@ export const CV_TEMPLATES = [
   {
     id: "dossier",
     name: "Dossier",
-    description: "Barra navy, skills agrupados y viñetas ▸",
+    description: "Barra navy, acento teal y viñetas ▸",
   },
 ] as const;
 

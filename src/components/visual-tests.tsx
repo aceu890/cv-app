@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { rerunVisualChecks } from "@/lib/actions/tests";
 import { TEST_COPY } from "@/lib/tests/copy";
-import { runClientChecks } from "@/lib/tests/run-client";
+import { runSpeedChecks, runUiChecks } from "@/lib/tests/run-client";
 import type {
   CheckGroup,
   TestLocale,
@@ -17,6 +17,7 @@ const GROUP_ORDER: CheckGroup[] = [
   "schema",
   "export",
   "ui",
+  "speed",
 ];
 
 type VisualTestsProps = {
@@ -24,10 +25,12 @@ type VisualTestsProps = {
 };
 
 export function VisualTests({ initial }: VisualTestsProps) {
-  const router = useRouter();
   const [locale, setLocale] = useState<TestLocale>("en");
-  const [client, setClient] = useState<VisualCheck[] | null>(null);
+  const [server, setServer] = useState(initial);
+  const [extra, setExtra] = useState<VisualCheck[] | null>(null);
   const [running, setRunning] = useState(true);
+  const [progress, setProgress] = useState(8);
+  const [step, setStep] = useState<"server" | "speed" | "ui">("server");
 
   useEffect(() => {
     try {
@@ -41,18 +44,41 @@ export function VisualTests({ initial }: VisualTestsProps) {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    setRunning(true);
-    runClientChecks().then((result) => {
-      if (!cancelled) {
-        setClient(result);
-        setRunning(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
+    setServer(initial);
+    void runSuite(initial);
   }, [initial]);
+
+  async function runSuite(serverChecks: VisualCheck[]) {
+    setRunning(true);
+    setProgress(12);
+    setStep("server");
+    setExtra(null);
+    setServer(serverChecks);
+
+    setProgress(28);
+    setStep("speed");
+    const speed = await runSpeedChecks((done, total) => {
+      setProgress(28 + Math.round((done / total) * 44));
+    });
+
+    setProgress(78);
+    setStep("ui");
+    const ui = await runUiChecks();
+
+    setExtra([...ui, ...speed]);
+    setProgress(100);
+    setRunning(false);
+  }
+
+  async function rerun() {
+    setRunning(true);
+    setProgress(6);
+    setStep("server");
+    setExtra(null);
+    const nextServer = await rerunVisualChecks();
+    setServer(nextServer);
+    await runSuite(nextServer);
+  }
 
   function changeLocale(next: TestLocale) {
     setLocale(next);
@@ -63,10 +89,16 @@ export function VisualTests({ initial }: VisualTestsProps) {
     }
   }
 
-  const checks = useMemo(() => [...initial, ...(client ?? [])], [initial, client]);
+  const checks = useMemo(() => [...server, ...(extra ?? [])], [server, extra]);
   const passed = checks.filter((item) => item.status === "pass").length;
   const failed = checks.filter((item) => item.status === "fail").length;
   const copy = TEST_COPY[locale];
+  const stepLabel =
+    step === "server"
+      ? copy.stepServer
+      : step === "speed"
+        ? copy.stepSpeed
+        : copy.stepUi;
 
   return (
     <div>
@@ -118,23 +150,39 @@ export function VisualTests({ initial }: VisualTestsProps) {
                   {failed} {copy.failed}
                 </span>
               ) : null}
-              <span className="ml-2">
-                / {checks.length}
-              </span>
+              <span className="ml-2">/ {checks.length}</span>
             </>
           )}
         </p>
         <button
           type="button"
-          onClick={() => {
-            setClient(null);
-            setRunning(true);
-            router.refresh();
-          }}
-          className="min-h-11 rounded-full border border-line px-4 text-sm text-ink transition-colors hover:bg-cream"
+          onClick={() => void rerun()}
+          disabled={running}
+          className="min-h-11 rounded-full border border-line px-4 text-sm text-ink transition-colors hover:bg-cream disabled:cursor-not-allowed disabled:opacity-60"
         >
           {copy.rerun}
         </button>
+      </div>
+
+      <div className="mt-4">
+        <div
+          className="h-2 overflow-hidden rounded-full bg-line"
+          role="progressbar"
+          aria-label={copy.progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <div
+            className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        {running ? (
+          <p className="mt-2 text-xs text-muted">
+            {progress}% · {stepLabel}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-8 space-y-10">
@@ -163,14 +211,10 @@ export function VisualTests({ initial }: VisualTestsProps) {
                         {ok ? "✓" : "!"}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium">
-                          {meta?.title ?? item.id}
-                        </p>
-                        <p className="mt-1 text-sm text-muted">
-                          {meta?.why}
-                        </p>
+                        <p className="font-medium">{meta?.title ?? item.id}</p>
+                        <p className="mt-1 text-sm text-muted">{meta?.why}</p>
                         <p className="mt-1.5 font-mono text-[12px] leading-relaxed text-ink/80">
-                          {item.detail}
+                          {item.detail[locale]}
                         </p>
                       </div>
                     </li>

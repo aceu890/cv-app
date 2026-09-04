@@ -6,12 +6,11 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
   const { url, key, configured } = getSupabaseEnv();
   const path = request.nextUrl.pathname;
-  const isProtected =
-    path.startsWith("/dashboard") ||
-    path.startsWith("/cv") ||
-    path.startsWith("/docs") ||
-    path.startsWith("/profile") ||
-    path.startsWith("/tests");
+  const isProtected = path.startsWith("/profile");
+
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.includes("-auth-token"));
 
   if (!configured) {
     if (isProtected) {
@@ -19,6 +18,10 @@ export async function updateSession(request: NextRequest) {
       redirectUrl.pathname = "/login";
       return NextResponse.redirect(redirectUrl);
     }
+    return supabaseResponse;
+  }
+
+  if (!isProtected && !hasAuthCookie) {
     return supabaseResponse;
   }
 

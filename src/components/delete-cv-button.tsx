@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import { deleteCv } from "@/lib/actions/account";
+import { deleteLocalCv, isLocalCvId } from "@/lib/cv/local-store";
 
-export function DeleteCvButton({ id, title }: { id: string; title: string }) {
+export function DeleteCvButton({
+  id,
+  title,
+  onLocalDeleted,
+}: {
+  id: string;
+  title: string;
+  onLocalDeleted?: () => void;
+}) {
   const [pending, setPending] = useState(false);
 
   return (
@@ -14,6 +23,12 @@ export function DeleteCvButton({ id, title }: { id: string; title: string }) {
         );
         if (!confirmed) return;
         setPending(true);
+        if (isLocalCvId(id)) {
+          deleteLocalCv(id);
+          onLocalDeleted?.();
+          setPending(false);
+          return;
+        }
         await deleteCv(formData);
       }}
     >

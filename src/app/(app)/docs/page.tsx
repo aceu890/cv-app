@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { DocsView } from "@/components/docs-view";
 
 export const metadata: Metadata = {
-  title: "Docs — Folio",
+  title: "Documentación",
   description:
-    "Technical documentation for Folio: stack, architecture, data model, and security.",
+    "Cómo está hecha CV FORGE: stack, arquitectura, datos y seguridad del creador de currículum gratis.",
+  alternates: { canonical: "/docs" },
 };
 
 export default function DocsPage() {

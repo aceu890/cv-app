@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { CvPreview } from "@/components/cv-preview";
 import { DatePicker } from "@/components/date-picker";
 import { TemplatePicker } from "@/components/template-picker";
@@ -18,6 +19,7 @@ import {
   type CvExperience,
   type CvProject,
 } from "@/lib/cv/schema";
+import { isLocalCvId, saveLocalCv } from "@/lib/cv/local-store";
 import type { CvTemplateId } from "@/lib/cv/templates";
 import { createClient } from "@/lib/supabase/client";
 
@@ -113,9 +115,20 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
     }
   }
 
+  const local = isLocalCvId(cvId);
+
   return (
     <div className="space-y-6 pb-28 lg:space-y-8 lg:pb-8">
-      <div className="sticky top-16 z-30 -mx-4 border-b border-line bg-paper/95 px-4 py-2 backdrop-blur lg:hidden">
+      {local ? (
+        <p className="rounded-2xl border border-line bg-cream/80 px-4 py-3 text-sm text-muted">
+          Este CV se guarda en este navegador.{" "}
+          <Link href="/login" className="text-accent underline-offset-4 hover:underline">
+            Entra con Google
+          </Link>{" "}
+          para copiarlo a la nube y no perderlo.
+        </p>
+      ) : null}
+      <div className="sticky top-16 z-30 -mx-4 border-b border-line bg-paper/90 px-4 py-2 backdrop-blur-xl lg:hidden">
         <div className="grid grid-cols-2 rounded-full bg-cream p-1">
           <button
             type="button"
@@ -831,7 +844,7 @@ function SaveBadge({
           : dirty
             ? "Tienes cambios sin guardar"
             : status === "saved"
-              ? "Guardado en tu perfil"
+              ? "Guardado"
               : "Completa tus datos y pulsa Guardar";
 
   return (
@@ -857,6 +870,13 @@ async function saveCv(
   setError(null);
 
   try {
+    if (isLocalCvId(id)) {
+      saveLocalCv(id, title, data);
+      onSaved();
+      setStatus("saved");
+      return;
+    }
+
     const supabase = createClient();
     const { error } = await supabase
       .from("cvs")

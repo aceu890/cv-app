@@ -1,4 +1,4 @@
-# Folio
+# CV FORGE
 
 Web résumé editor. Users sign in with Google, create one or more CV versions, pick among 10 distinct layouts, and export to PDF. Every change is saved to their account.
 
@@ -6,7 +6,7 @@ This repo is a full-stack portfolio product: real authentication, a database wit
 
 **Local demo:** `npm run dev` → [http://localhost:3000](http://localhost:3000)
 
-[Español ↓](#folio-español)
+[Español ↓](#cv-forge-español)
 
 ---
 
@@ -227,7 +227,7 @@ Full-stack · Valparaíso, Chile
 ---
 ---
 
-# Folio (Español)
+# CV FORGE (Español)
 
 Editor web de currículums. El usuario entra con Google, crea una o más versiones de su CV, elige entre 10 plantillas con layouts distintos y exporta a PDF. Cada cambio queda guardado en su cuenta.
 
@@ -235,7 +235,7 @@ Este repositorio es un producto full-stack de portafolio: autenticación real, b
 
 **Demo local:** `npm run dev` → [http://localhost:3000](http://localhost:3000)
 
-[English ↑](#folio)
+[English ↑](#cv-forge)
 
 ---
 

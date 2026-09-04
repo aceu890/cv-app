@@ -179,17 +179,17 @@ function TemplateThumb({ id }: { id: CvTemplateId }) {
     case "dossier":
       return (
         <div className="flex h-16 overflow-hidden rounded-md border border-line/80">
-          <div className="w-[34%] bg-[#1a2744] p-1.5">
+          <div className="w-[28%] bg-[#1e2a38] p-1.5">
             <div className="h-1.5 w-7 bg-white/90" />
-            <div className="mt-0.5 h-1.5 w-8 bg-white/90" />
-            <div className="mt-1.5 h-1 w-full bg-[#c4a574]/70" />
-            <div className="mt-1 h-1 w-4/5 bg-[#c4a574]/35" />
+            <div className="mt-0.5 h-1.5 w-8 bg-[#2e7d7b]" />
+            <div className="mt-1.5 h-1 w-full bg-[#2e7d7b]/80" />
+            <div className="mt-1 h-1 w-4/5 bg-[#d7e1ea]/40" />
           </div>
-          <div className="flex-1 bg-[#f4f1eb] p-1.5">
-            <div className="h-1 w-8 bg-[#1a2744]" />
-            <div className="mt-1 h-px w-full bg-[#c4a574]" />
-            <div className="mt-1.5 h-1 w-full bg-[#d9d1c4]" />
-            <div className="mt-1 h-1 w-10/12 bg-[#d9d1c4]" />
+          <div className="flex-1 bg-white p-1.5">
+            <div className="h-1 w-8 bg-[#222222]" />
+            <div className="mt-1 h-px w-full bg-[#2e7d7b]" />
+            <div className="mt-1.5 h-1 w-full bg-[#e5e5e5]" />
+            <div className="mt-1 h-1 w-10/12 bg-[#e5e5e5]" />
           </div>
         </div>
       );
