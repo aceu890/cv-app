@@ -10,7 +10,8 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/dashboard") ||
     path.startsWith("/cv") ||
     path.startsWith("/docs") ||
-    path.startsWith("/profile");
+    path.startsWith("/profile") ||
+    path.startsWith("/tests");
 
   if (!configured) {
     if (isProtected) {

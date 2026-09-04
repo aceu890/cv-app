@@ -111,7 +111,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
             items: [
               "The user signs in with Google. Supabase returns to /auth/callback with an authorization code.",
               "The server exchanges the code for a session (httpOnly cookies) and creates a profile plus a first CV if needed.",
-              "src/proxy.ts refreshes the session on every request and blocks /dashboard, /cv, /docs, and /profile when there is no user.",
+              "src/proxy.ts refreshes the session on every request and blocks /dashboard, /cv, /docs, /tests, and /profile when there is no user.",
               "The editor writes typed JSON to cvs.data. RLS stops any other account from reading or writing those rows.",
               "The preview maps CvData to a view model and renders one of ten A4 layouts (794×1123 px).",
               "Export clones that sheet, forces light theme, and writes an A4 PDF in the browser.",
@@ -185,6 +185,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
               ["/dashboard", "Private", "CV list"],
               ["/cv/[id]", "Private", "Editor and A4 preview"],
               ["/docs", "Private", "This documentation"],
+              ["/tests", "Private", "Live visual checks"],
               ["/profile", "Private", "Display name"],
             ],
           },
@@ -301,7 +302,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
             items: [
               "El usuario entra con Google. Supabase vuelve a /auth/callback con un código de autorización.",
               "El servidor cambia el código por sesión (cookies httpOnly) y crea perfil + primer CV si hace falta.",
-              "src/proxy.ts refresca la sesión en cada request y bloquea /dashboard, /cv, /docs y /profile si no hay usuario.",
+              "src/proxy.ts refresca la sesión en cada request y bloquea /dashboard, /cv, /docs, /tests y /profile si no hay usuario.",
               "El editor guarda JSON tipado en cvs.data. RLS impide leer o escribir filas de otra cuenta.",
               "La vista previa mapea CvData a un modelo y pinta una de las diez plantillas A4 (794×1123 px).",
               "Exportar clona esa hoja, fuerza tema claro y genera el PDF A4 en el navegador.",
@@ -375,6 +376,7 @@ export const DOC_COPY: Record<DocLocale, DocCopy> = {
               ["/dashboard", "Privada", "Lista de CVs"],
               ["/cv/[id]", "Privada", "Editor y vista previa A4"],
               ["/docs", "Privada", "Esta documentación"],
+              ["/tests", "Privada", "Checks visuales en vivo"],
               ["/profile", "Privada", "Nombre de la cuenta"],
             ],
           },
