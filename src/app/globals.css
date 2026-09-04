@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --paper: #f3eee4;
+  --cream: #faf7f1;
+  --ink: #1c1915;
+  --muted: #6b6560;
+  --accent: #234739;
+  --accent-hover: #1a382c;
+  --line: #e2d9cc;
+  --field: #ffffff;
+  --danger: #9f1239;
+  --on-accent: #faf7f1;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #12110f;
+  --cream: #1c1a17;
+  --ink: #f4efe6;
+  --muted: #b4aaa0;
+  --accent: #7eb89a;
+  --accent-hover: #9dccb2;
+  --line: #3a342c;
+  --field: #24211c;
+  --danger: #fb7185;
+  --on-accent: #12110f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-line: var(--line);
+  --color-field: var(--field);
+  --color-danger: var(--danger);
+  --color-on-accent: var(--on-accent);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-fraunces);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--paper);
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.field {
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--line);
+  background: var(--field);
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--accent);
+}
+
+.field:disabled {
+  opacity: 0.65;
+}
+
+.cv-sheet {
+  background: #fff;
+  color: #111;
+  min-height: 1123px;
+}
+
+.cv-page {
+  box-sizing: border-box;
+  min-height: 1123px;
+  overflow: visible;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #cv-sheet,
+  #cv-sheet * {
+    visibility: visible;
+  }
+
+  #cv-sheet {
+    position: absolute;
+    inset: 0;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .cv-page {
+    min-height: 297mm;
+  }
 }
