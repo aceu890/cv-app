@@ -1,18 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { Database } from "@/lib/supabase/database.types";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export async function createClient() {
+  const cookieStore = await cookies();
   const { url, key, configured } = getSupabaseEnv();
 
   if (!configured) {
-    throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY.",
-    );
+    redirect("/login");
   }
-
-  const cookieStore = await cookies();
 
   return createServerClient<Database>(url, key, {
     cookies: {

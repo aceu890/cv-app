@@ -5,6 +5,8 @@ import { ensureUserWorkspace } from "@/lib/auth/workspace";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({
   children,
 }: {
