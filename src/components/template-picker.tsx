@@ -1,5 +1,6 @@
 "use client";
-
+import { IconLayout } from "@/components/icons";
+import { SectionHead } from "@/components/section-head";
 import { CV_TEMPLATES, type CvTemplateId } from "@/lib/cv/templates";
 
 export function TemplatePicker({
@@ -12,11 +13,11 @@ export function TemplatePicker({
   return (
     <section>
       <div className="mb-3">
-        <h2 className="font-serif text-2xl">Plantillas</h2>
-        <p className="mt-1 text-sm text-muted">
-          Cada una cambia el layout. Desliza en el teléfono para verlas todas.
-          Harvard es la opción ATS.
-        </p>
+        <SectionHead
+          title="Plantillas"
+          hint="Elige cómo se ve el PDF. Harvard es la más segura para filtros automáticos."
+          icon={<IconLayout className="size-5" />}
+        />
       </div>
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 md:grid-cols-3 lg:grid-cols-5">
         {CV_TEMPLATES.map((template) => {

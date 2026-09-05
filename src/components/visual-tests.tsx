@@ -126,7 +126,7 @@ export function VisualTests({ initial }: VisualTestsProps) {
               onClick={() => changeLocale(id)}
               className={`min-h-10 rounded-full px-3.5 text-sm transition-colors ${
                 locale === id
-                  ? "bg-ink text-paper"
+                  ? "bg-solid text-on-solid"
                   : "text-muted hover:text-ink"
               }`}
             >

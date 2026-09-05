@@ -19,7 +19,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-cream/70 text-ink transition-colors hover:bg-cream"
+      className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-cream text-ink transition-colors hover:border-accent hover:text-accent"
       aria-label="Cambiar modo claro u oscuro"
       title="Modo claro / oscuro"
     >

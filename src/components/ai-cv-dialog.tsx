@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AppModal } from "@/components/app-modal";
 import { createCvFromAi } from "@/lib/actions/ai-cv";
-import { createLocalCv } from "@/lib/cv/local-store";
+import { applyAiCvResult } from "@/lib/cv/apply-ai-cv-result";
+import { isPdfUpload, MAX_IMPORT_PDF_BYTES } from "@/lib/cv/pdf-import";
 
 export function AiCvButton({
   onLocalCreated,
@@ -12,19 +14,20 @@ export function AiCvButton({
   onLocalCreated?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
 
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-accent hover:text-on-accent sm:w-auto"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-solid px-4 py-2.5 text-sm font-medium text-on-solid transition-colors hover:bg-accent-hover hover:text-on-accent sm:w-auto"
       >
         Crear con IA
       </button>
       {open ? (
         <AiCvDialog
-          onClose={() => setOpen(false)}
+          onClose={close}
           onLocalCreated={onLocalCreated}
         />
       ) : null}
@@ -44,41 +47,16 @@ function AiCvDialog({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    textareaRef.current?.focus();
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && !pending) {
-        onClose();
-      }
-    }
-
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = previous;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose, pending]);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6">
-      <button
-        type="button"
-        aria-label="Cerrar"
-        className="absolute inset-0 bg-ink/40"
-        onClick={() => {
-          if (!pending) onClose();
-        }}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-[0_24px_80px_-32px_rgba(28,25,21,0.55)]"
-      >
+    <AppModal
+      labelledBy={titleId}
+      canClose={!pending}
+      onClose={onClose}
+      panelClassName="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden"
+    >
         <div className="border-b border-line px-5 py-4 sm:px-6">
           <p className="text-xs font-medium tracking-[0.16em] text-accent uppercase">
             Asistente
@@ -87,9 +65,8 @@ function AiCvDialog({
             Crear CV con IA · Dossier
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Cuéntale quién eres: oficio, empresas, fechas, estudios, skills y
-            contacto. Armamos el currículum en plantilla Dossier. No inventamos
-            cifras.
+            Pega tu texto, exporta LinkedIn o sube un PDF. Armamos el
+            currículum en Dossier. No inventamos cifras.
           </p>
         </div>
 
@@ -98,30 +75,66 @@ function AiCvDialog({
           action={async (formData) => {
             setPending(true);
             setError(null);
-            const result = await createCvFromAi(formData);
-            if (result?.error) {
-              setError(result.error);
+            if (file) formData.set("file", file);
+            try {
+              const result = await createCvFromAi(formData);
+              const nextError = applyAiCvResult(result, router, onLocalCreated);
+              if (nextError) {
+                setError(nextError);
+                setPending(false);
+              }
+            } catch {
+              setError("No se pudo crear el currículum. Inténtalo de nuevo.");
               setPending(false);
-              return;
-            }
-            if (result?.local) {
-              const cv = createLocalCv(result.title, result.data);
-              onLocalCreated?.();
-              router.push(`/cv/${cv.id}`);
             }
           }}
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-            <label htmlFor="ai-cv-context" className="text-sm font-medium">
-              Tu contexto
+            <label className="block">
+              <span className="text-sm font-medium">Importar PDF o TXT</span>
+              <input
+                type="file"
+                accept=".txt,.md,.pdf,text/plain,application/pdf"
+                disabled={pending}
+                className="mt-2 block w-full text-sm text-muted"
+                onChange={async (event) => {
+                  const next = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!next) return;
+                  if (next.size > MAX_IMPORT_PDF_BYTES) {
+                    setError("El archivo pesa demasiado (máximo 6 MB).");
+                    setFile(null);
+                    setFileName("");
+                    return;
+                  }
+                  setError(null);
+                  setFileName(next.name);
+                  if (isPdfUpload(next)) {
+                    setFile(next);
+                    return;
+                  }
+                  const text = await next.text();
+                  if (textareaRef.current) {
+                    textareaRef.current.value = text;
+                  }
+                  setFile(null);
+                }}
+              />
+              {fileName ? (
+                <span className="mt-1 block text-xs text-muted">{fileName}</span>
+              ) : null}
+            </label>
+            <label htmlFor="ai-cv-context" className="mt-4 block text-sm font-medium">
+              O pega LinkedIn / tu CV en texto
             </label>
             <textarea
               ref={textareaRef}
               id="ai-cv-context"
               name="context"
-              required
-              minLength={40}
+              required={!file}
+              minLength={file ? undefined : 40}
               rows={14}
+              autoFocus
               disabled={pending}
               placeholder={`Ejemplo:
 Fernando Andrés Soto Gazul
@@ -155,13 +168,12 @@ React, TypeScript, Node.js, Java, SQL.`}
             <button
               type="submit"
               disabled={pending}
-              className="min-h-11 rounded-full bg-ink px-5 text-sm font-medium text-paper transition-colors hover:bg-accent hover:text-on-accent disabled:opacity-60"
+              className="min-h-11 rounded-full bg-solid px-5 text-sm font-medium text-on-solid transition-colors hover:bg-accent-hover hover:text-on-accent disabled:opacity-60"
             >
               {pending ? "Creando tu Dossier…" : "Crear currículum"}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AppModal>
   );
 }

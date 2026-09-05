@@ -25,7 +25,7 @@ export function LocalCvPage({ id }: { id: string }) {
         </p>
         <Link
           href="/dashboard"
-          className="mt-6 inline-flex rounded-full bg-ink px-4 py-2.5 text-sm text-paper"
+          className="mt-6 inline-flex rounded-full bg-solid px-4 py-2.5 text-sm text-on-solid"
         >
           Volver a tus CVs
         </Link>

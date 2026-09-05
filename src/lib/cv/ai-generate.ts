@@ -389,6 +389,88 @@ export async function generateDossierCv(
   return localGenerate(context, profile);
 }
 
+export async function completeJson(prompt: string): Promise<unknown | null> {
+  const geminiKey =
+    process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const openAiKey = process.env.OPENAI_API_KEY;
+
+  try {
+    if (geminiKey) return await generateWithGemini(prompt, geminiKey);
+    if (openAiKey) return await generateWithOpenAi(prompt, openAiKey);
+  } catch (error) {
+    console.error("IA JSON:", error);
+  }
+
+  return null;
+}
+
+export async function generateDossierCvFromPdf(
+  base64: string,
+  profile: { full_name?: string | null; email?: string | null },
+): Promise<CvData> {
+  const geminiKey =
+    process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!geminiKey) {
+    throw new Error(
+      "Este PDF parece una imagen. Exporta uno con texto seleccionable o pega el contenido.",
+    );
+  }
+
+  const data = base64.includes(",")
+    ? base64.slice(base64.indexOf(",") + 1).replace(/\s/g, "")
+    : base64.replace(/\s/g, "");
+  const prompt = buildPrompt(
+    "El currículum está en el PDF adjunto. Extrae solo lo que esté escrito.",
+    profile,
+  );
+  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"];
+  let lastError = "No se pudo leer el PDF.";
+
+  const attachments = [
+    { inlineData: { mimeType: "application/pdf", data } },
+    { inline_data: { mime_type: "application/pdf", data } },
+  ];
+
+  for (const model of models) {
+    for (const attachment of attachments) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiKey)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }, attachment],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: "application/json",
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        lastError = `Gemini (${model}): ${response.status}`;
+        continue;
+      }
+
+      const payload = (await response.json()) as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[];
+      };
+      const text = payload.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        return withIds(parseCvData(extractJson(text)));
+      }
+    }
+  }
+
+  throw new Error(lastError);
+}
+
 export function cvTitleFromData(data: CvData) {
   const name = data.personal.fullName.split(" ").slice(0, 2).join(" ");
   const role = data.personal.title;

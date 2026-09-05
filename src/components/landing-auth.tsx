@@ -13,7 +13,7 @@ export function LandingHeaderAuth() {
     return (
       <Link
         href="/dashboard"
-        className="rounded-full bg-ink px-4 py-2.5 text-sm text-paper transition-colors hover:bg-accent hover:text-on-accent"
+        className="rounded-full bg-solid px-4 py-2.5 text-sm text-on-solid transition-colors hover:bg-accent-hover hover:text-on-accent"
       >
         Ir al panel
       </Link>
@@ -45,7 +45,7 @@ export function LandingMainAuth() {
     return (
       <Link
         href="/dashboard"
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-medium text-paper sm:w-auto"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-solid px-5 py-3 text-sm font-medium text-on-solid sm:w-auto"
       >
         Continuar editando
       </Link>
@@ -53,14 +53,14 @@ export function LandingMainAuth() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+    <div className="flex w-full flex-col gap-2">
       <Link
         href="/dashboard"
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-medium text-paper sm:w-auto"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-solid px-5 py-3 text-sm font-medium text-on-solid"
       >
         Empezar sin cuenta
       </Link>
-      <GoogleButton label="Guardar en la nube" />
+      <GoogleButton label="Guardar en la nube" variant="line" />
     </div>
   );
 }

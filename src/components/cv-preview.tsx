@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { CvLayout } from "@/components/cv-layouts";
 import { formatCvDate, formatCvYear } from "@/lib/cv/dates";
 import { A4_HEIGHT_PX, A4_WIDTH_PX } from "@/lib/cv/pdf";
-import type { CvData } from "@/lib/cv/schema";
+import { getMeta, type CvData } from "@/lib/cv/schema";
 import { getTemplate } from "@/lib/cv/templates";
 
 function dateRange(start: string, end: string, current?: boolean) {
@@ -36,6 +36,7 @@ export function CvPreview({
 }) {
   const templateMeta = getTemplate(data.template);
   const { personal } = data;
+  const meta = getMeta(data);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
@@ -48,6 +49,7 @@ export function CvPreview({
       personal.location,
       personal.phone,
       personal.email,
+      meta.rut ? `RUT ${meta.rut}` : "",
       personal.linkedin,
       personal.website,
     ].filter(Boolean),

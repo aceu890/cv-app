@@ -20,7 +20,7 @@ export function LoginGallery() {
           </figcaption>
         </figure>
 
-        <figure className="relative aspect-square overflow-hidden rounded-[1.3rem] border border-line/70 shadow-[var(--shadow)]">
+        <figure className="float-slow relative aspect-square overflow-hidden rounded-[1.3rem] border border-line/70 shadow-[var(--shadow)]">
           <Image
             src="/login/portrait.png"
             alt="Candidato sonriendo con confianza antes de una entrevista"
@@ -30,7 +30,7 @@ export function LoginGallery() {
           />
         </figure>
 
-        <figure className="relative min-h-[140px] overflow-hidden rounded-[1.3rem] border border-line/70 shadow-[var(--shadow)] sm:min-h-[220px]">
+        <figure className="float-slower relative min-h-[140px] overflow-hidden rounded-[1.3rem] border border-line/70 shadow-[var(--shadow)] sm:min-h-[220px]">
           <Image
             src="/login/desk.png"
             alt="Escritorio con currículum impreso, portátil y café listos para postular"

@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { BrandLogo } from "@/components/brand-logo";
+import {
+  IconCloud,
+  IconGift,
+  IconLetter,
+  IconQr,
+  IconShield,
+} from "@/components/icons";
 import { HomeJsonLd } from "@/components/json-ld";
 import {
   LandingHeaderAuth,
   LandingMainAuth,
 } from "@/components/landing-auth";
+import { DevModeSwitch } from "@/components/dev-mode-switch";
 import { LandingSeo } from "@/components/landing-seo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getSupabaseEnv } from "@/lib/supabase/env";
@@ -21,11 +30,11 @@ export const metadata: Metadata = {
 };
 
 const TRUST = [
-  "Gratis",
-  "Sin publicidad",
-  "Sin fines de lucro",
-  "Con o sin cuenta",
-  "Fácil de usar",
+  { label: "Gratis", Icon: IconGift },
+  { label: "Sin publicidad", Icon: IconShield },
+  { label: "Carta y ATS", Icon: IconLetter },
+  { label: "Link y QR", Icon: IconQr },
+  { label: "Con o sin cuenta", Icon: IconCloud },
 ];
 
 export default function HomePage() {
@@ -38,6 +47,7 @@ export default function HomePage() {
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
           <BrandLogo href="/" size="sm" />
           <div className="flex items-center gap-2">
+            <DevModeSwitch />
             <ThemeToggle />
             <LandingHeaderAuth />
           </div>
@@ -46,8 +56,9 @@ export default function HomePage() {
 
       <main>
         <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-20">
-          <div className="max-w-xl">
-            <p className="inline-flex rounded-full border border-line bg-cream/80 px-3 py-1 text-xs font-medium tracking-[0.16em] text-accent uppercase">
+          <div className="rise max-w-xl">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-cream/80 px-3 py-1 text-xs font-medium tracking-[0.16em] text-accent uppercase">
+              <span className="size-1.5 rounded-full bg-accent" />
               Creador de currículum gratis
             </p>
             <h1 className="mt-5 font-serif text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
@@ -58,16 +69,17 @@ export default function HomePage() {
               y fácil de usar. Entra con o sin cuenta, elige una plantilla y
               descarga un PDF A4 profesional.
             </p>
-            <div className="mt-8 flex max-w-md flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 max-w-md">
               <LandingMainAuth />
             </div>
             <ul className="mt-8 flex flex-wrap gap-2 text-sm">
               {TRUST.map((item) => (
                 <li
-                  key={item}
-                  className="rounded-full border border-line bg-cream/70 px-3 py-1.5 text-muted"
+                  key={item.label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-cream/70 px-3 py-1.5 text-muted"
                 >
-                  {item}
+                  <item.Icon className="size-3.5 text-accent" />
+                  {item.label}
                 </li>
               ))}
             </ul>
@@ -80,8 +92,26 @@ export default function HomePage() {
             ) : null}
           </div>
 
-          <div className="relative">
+          <div className="rise-2 relative">
             <div className="absolute -inset-4 rounded-[2rem] bg-accent/10 blur-2xl" />
+            <div className="float-slower absolute -top-4 -right-2 z-10 hidden w-28 overflow-hidden rounded-[1.1rem] border border-line shadow-[var(--shadow)] sm:block">
+              <Image
+                src="/login/portrait.png"
+                alt=""
+                width={224}
+                height={224}
+                className="aspect-square object-cover"
+              />
+            </div>
+            <div className="float-slow absolute -bottom-3 -left-4 z-10 hidden w-32 overflow-hidden rounded-[1.1rem] border border-line shadow-[var(--shadow)] md:block">
+              <Image
+                src="/login/desk.png"
+                alt=""
+                width={256}
+                height={180}
+                className="aspect-[4/3] object-cover"
+              />
+            </div>
             <div className="relative overflow-hidden rounded-[1.6rem] border border-line bg-cream p-3 shadow-[var(--shadow)] sm:p-4">
               <div className="mb-3 flex items-center gap-1.5 px-1">
                 <span className="size-2 rounded-full bg-line" />

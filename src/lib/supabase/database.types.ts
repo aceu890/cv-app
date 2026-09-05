@@ -36,6 +36,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      public_shares: {
+        Row: {
+          slug: string;
+          title: string;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          slug: string;
+          title: string;
+          payload: Json;
+          created_at?: string;
+        };
+        Update: {
+          slug?: string;
+          title?: string;
+          payload?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       cvs: {
         Row: {
           id: string;

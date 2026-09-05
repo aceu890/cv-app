@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createDefaultCvData, cvDataToJson } from "@/lib/cv/schema";
+import {
+  createDefaultCvData,
+  cvDataToJson,
+  parseDepth,
+} from "@/lib/cv/schema";
 import {
   EXAMPLE_CV_TITLE,
   createFullStackExampleCv,
@@ -19,7 +23,8 @@ export async function signOut() {
   redirect("/dashboard");
 }
 
-export async function createCv() {
+export async function createCv(formData?: FormData) {
+  const depth = parseDepth(formData?.get("depth"));
   const supabase = await createClient();
   const {
     data: { user },
@@ -48,10 +53,13 @@ export async function createCv() {
       user_id: user.id,
       title,
       data: cvDataToJson(
-        createDefaultCvData({
-          full_name: profile?.full_name,
-          email: profile?.email ?? user.email,
-        }),
+        createDefaultCvData(
+          {
+            full_name: profile?.full_name,
+            email: profile?.email ?? user.email,
+          },
+          depth,
+        ),
       ),
     })
     .select("id")

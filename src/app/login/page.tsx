@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { DevModeSwitch } from "@/components/dev-mode-switch";
 import { GoogleButton } from "@/components/google-button";
 import { LoginGallery } from "@/components/login-gallery";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,7 +41,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="flex min-h-full flex-col">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
         <BrandLogo href="/" size="sm" />
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <DevModeSwitch />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 pb-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-20">
@@ -71,13 +75,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <GoogleButton
               next={params.next || "/dashboard"}
               label="Crear mi currículum con Google"
+              hint
             />
             <p className="mt-3 text-center text-sm text-muted">
               Gratis. Un clic. Sin inventar otra contraseña.
             </p>
             <Link
               href="/dashboard"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-line px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-field"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-line bg-transparent px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-field"
             >
               Seguir sin cuenta
             </Link>

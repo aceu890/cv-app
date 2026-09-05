@@ -1,12 +1,27 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ensureUserWorkspace } from "@/lib/auth/workspace";
+import { AUTH_NEXT_COOKIE } from "@/lib/dev-mode";
 import { createClient } from "@/lib/supabase/server";
+
+function safePath(value: string | undefined | null) {
+  return value?.startsWith("/") ? value : null;
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
-  const safeNext = next.startsWith("/") ? next : "/dashboard";
+  const cookieStore = await cookies();
+  const next =
+    safePath(searchParams.get("next")) ??
+    safePath(cookieStore.get(AUTH_NEXT_COOKIE)?.value) ??
+    "/dashboard";
+
+  function finish(url: string) {
+    const response = NextResponse.redirect(url);
+    response.cookies.delete(AUTH_NEXT_COOKIE);
+    return response;
+  }
 
   if (code) {
     const supabase = await createClient();
@@ -25,9 +40,9 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}${safeNext}`);
+      return finish(`${origin}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return finish(`${origin}/login?error=auth`);
 }

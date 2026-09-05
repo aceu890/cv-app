@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import {
+  LOCAL_CALLBACK_URL,
+  LOCAL_CALLBACK_WILDCARD,
+  getOAuthCallbackUrl,
+  rememberAuthNext,
+} from "@/lib/dev-mode";
+import { useDevMode } from "@/lib/use-dev-mode";
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
@@ -30,15 +37,21 @@ function GoogleMark() {
 type GoogleButtonProps = {
   next?: string;
   label?: string;
+  hint?: boolean;
+  variant?: "solid" | "line";
 };
 
 export function GoogleButton({
   next = "/dashboard",
   label = "Continuar con Google",
+  hint = false,
+  variant = "solid",
 }: GoogleButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { on: devMode } = useDevMode();
   const configured = getSupabaseEnv().configured;
+  const returnTo = hint ? getOAuthCallbackUrl(devMode) : "";
 
   async function signIn() {
     if (!configured) {
@@ -53,11 +66,14 @@ export function GoogleButton({
 
     try {
       const supabase = createClient();
-      const origin = window.location.origin;
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const callbackUrl = getOAuthCallbackUrl();
+      rememberAuthNext(next);
+
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+          redirectTo: callbackUrl,
+          skipBrowserRedirect: true,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -65,10 +81,15 @@ export function GoogleButton({
         },
       });
 
-      if (oauthError) {
-        setError(oauthError.message);
+      if (oauthError || !data.url) {
+        setError(oauthError?.message ?? "No se pudo iniciar sesión con Google.");
         setLoading(false);
+        return;
       }
+
+      const authorize = new URL(data.url);
+      authorize.searchParams.set("redirect_to", callbackUrl);
+      window.location.assign(authorize.toString());
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -85,12 +106,32 @@ export function GoogleButton({
         type="button"
         onClick={signIn}
         disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-ink px-5 py-3 text-sm font-medium text-paper transition-colors hover:bg-accent hover:text-on-accent disabled:cursor-not-allowed disabled:opacity-70"
+        className={
+          variant === "line"
+            ? "inline-flex w-full items-center justify-center gap-3 rounded-full border border-line bg-transparent px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-field disabled:cursor-not-allowed disabled:opacity-70"
+            : "inline-flex w-full items-center justify-center gap-3 rounded-full bg-solid px-5 py-3 text-sm font-medium text-on-solid transition-colors hover:bg-accent-hover hover:text-on-accent disabled:cursor-not-allowed disabled:opacity-70"
+        }
       >
         <GoogleMark />
         {loading ? "Redirigiendo a Google…" : label}
       </button>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {returnTo ? (
+        <div className="space-y-1 text-center text-xs text-muted">
+          <p>Después de Google vuelves a {returnTo.replace(/^https?:\/\//, "")}</p>
+          {returnTo.startsWith("http://localhost") ||
+          returnTo.startsWith("http://127.0.0.1") ? (
+            <p className="leading-relaxed">
+              En Supabase → Authentication → URL Configuration añade estas
+              Redirect URLs. Si faltan, Google te manda a producción.
+              <br />
+              <code className="text-ink">{LOCAL_CALLBACK_URL}</code>
+              <br />
+              <code className="text-ink">{LOCAL_CALLBACK_WILDCARD}</code>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

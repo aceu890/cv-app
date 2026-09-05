@@ -3,11 +3,25 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { CvPreview } from "@/components/cv-preview";
+import { CvScoreBadge } from "@/components/cv-score-badge";
+import { CvToolkit } from "@/components/cv-toolkit";
 import { DatePicker } from "@/components/date-picker";
+import {
+  IconAward,
+  IconBriefcase,
+  IconSchool,
+  IconTags,
+  IconUser,
+} from "@/components/icons";
+import { SectionHead } from "@/components/section-head";
 import { TemplatePicker } from "@/components/template-picker";
+import { scoreCv } from "@/lib/cv/score";
 import { cvFileName, exportElementToPdf } from "@/lib/cv/pdf";
 import {
+  CV_DEPTHS,
   cvDataToJson,
+  getMeta,
+  type CvDepth,
   emptyCertification,
   emptyEducation,
   emptyExperience,
@@ -116,6 +130,18 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
   }
 
   const local = isLocalCvId(cvId);
+  const meta = getMeta(data);
+  const depth = meta.depth;
+  const score = scoreCv(data);
+  const showMedio = depth !== "basico";
+  const showPro = depth === "pro";
+
+  function setDepth(next: CvDepth) {
+    setData((current) => ({
+      ...current,
+      meta: { ...getMeta(current), depth: next },
+    }));
+  }
 
   return (
     <div className="space-y-6 pb-28 lg:space-y-8 lg:pb-8">
@@ -134,7 +160,7 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
             type="button"
             onClick={() => setPane("edit")}
             className={`rounded-full px-3 py-2.5 text-sm font-medium ${
-              pane === "edit" ? "bg-ink text-paper" : "text-muted"
+              pane === "edit" ? "bg-solid text-on-solid" : "text-muted"
             }`}
           >
             Editar
@@ -143,7 +169,7 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
             type="button"
             onClick={() => setPane("preview")}
             className={`rounded-full px-3 py-2.5 text-sm font-medium ${
-              pane === "preview" ? "bg-ink text-paper" : "text-muted"
+              pane === "preview" ? "bg-solid text-on-solid" : "text-muted"
             }`}
           >
             Vista previa
@@ -151,13 +177,21 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
         </div>
       </div>
 
-      <div className={pane === "edit" ? "block" : "hidden lg:block"}>
+      <div className={pane === "edit" ? "block space-y-6" : "hidden lg:block"}>
         <TemplatePicker
           value={data.template}
           onChange={(template: CvTemplateId) =>
             setData((current) => ({ ...current, template }))
           }
         />
+        {showPro ? (
+          <CvToolkit
+            cvId={cvId}
+            title={title}
+            data={data}
+            onChange={setData}
+          />
+        ) : null}
       </div>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,42%)]">
       <div className={`space-y-8 ${pane === "edit" ? "block" : "hidden lg:block"}`}>
@@ -172,6 +206,7 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
               className="field"
             />
           </label>
+          <CvScoreBadge score={score} />
           <SaveBadge
             status={status}
             error={error}
@@ -181,8 +216,35 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
           />
         </div>
 
+        <div className="rounded-2xl border border-line bg-cream/80 p-3">
+          <p className="text-xs font-medium tracking-[0.14em] text-muted uppercase">
+            Cómo quieres armarlo
+          </p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-3">
+            {CV_DEPTHS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setDepth(item.id)}
+                className={`rounded-xl border px-3 py-2 text-left ${
+                  depth === item.id
+                    ? "border-accent bg-paper"
+                    : "border-line bg-field hover:border-ink/20"
+                }`}
+              >
+                <p className="text-sm font-medium">{item.label}</p>
+                <p className="text-xs text-muted">{item.hint}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl">Encabezado</h2>
+          <SectionHead
+            title="Encabezado"
+            hint="Tus datos de contacto. Es lo primero que lee el reclutador."
+            icon={<IconUser className="size-5" />}
+          />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="Nombre completo"
@@ -211,23 +273,43 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
               onChange={(value) => updatePersonal("location", value)}
               placeholder="Santiago, Chile"
             />
-            <Field
-              label="LinkedIn"
-              value={data.personal.linkedin}
-              onChange={(value) => updatePersonal("linkedin", value)}
-              placeholder="linkedin.com/in/usuario"
-            />
-            <Field
-              label="GitHub / Portafolio"
-              value={data.personal.website}
-              onChange={(value) => updatePersonal("website", value)}
-              placeholder="github.com/usuario"
-            />
+            {showMedio ? (
+              <Field
+                label="LinkedIn"
+                value={data.personal.linkedin}
+                onChange={(value) => updatePersonal("linkedin", value)}
+                placeholder="linkedin.com/in/usuario"
+              />
+            ) : null}
+            {showMedio ? (
+              <Field
+                label="GitHub / Portafolio"
+                value={data.personal.website}
+                onChange={(value) => updatePersonal("website", value)}
+                placeholder="github.com/usuario"
+              />
+            ) : null}
+            {showPro ? (
+              <Field
+                label="RUT (opcional)"
+                value={meta.rut}
+                onChange={(value) =>
+                  setData((current) => ({
+                    ...current,
+                    meta: { ...getMeta(current), rut: value },
+                  }))
+                }
+                placeholder="12.345.678-9"
+              />
+            ) : null}
           </div>
         </section>
 
         <section className="space-y-4">
-          <h2 className="font-serif text-2xl">Perfil profesional</h2>
+          <SectionHead
+            title="Perfil profesional"
+            hint="3 o 4 líneas: quién eres, qué haces y qué buscas."
+          />
           <label className="block">
             <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted uppercase">
               3–4 líneas sobre quién eres y qué aportas
@@ -246,7 +328,11 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Experiencia profesional</h2>
+            <SectionHead
+              title="Experiencia profesional"
+              hint="Puestos recientes primero. Cada viñeta: verbo + qué hiciste + resultado."
+              icon={<IconBriefcase className="size-5" />}
+            />
             <button
               type="button"
               className="text-sm text-accent hover:underline"
@@ -353,7 +439,11 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Educación</h2>
+            <SectionHead
+              title="Educación"
+              hint="Título, instituto y años. Lo más reciente arriba."
+              icon={<IconSchool className="size-5" />}
+            />
             <button
               type="button"
               className="text-sm text-accent hover:underline"
@@ -435,7 +525,11 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Habilidades técnicas</h2>
+            <SectionHead
+              title="Habilidades"
+              hint="Herramientas y oficios que sí usas. 6 a 12 es un buen número."
+              icon={<IconTags className="size-5" />}
+            />
           </div>
           <BulletEditor
             values={data.skills.length > 0 ? data.skills : [""]}
@@ -449,9 +543,13 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
           />
         </section>
 
+        {showMedio ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Proyectos destacados</h2>
+            <SectionHead
+              title="Proyectos"
+              hint="Trabajos propios o de estudio que muestren cómo haces las cosas."
+            />
             <button
               type="button"
               className="text-sm text-accent hover:underline"
@@ -519,10 +617,16 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
             </div>
           )}
         </section>
+        ) : null}
 
+        {showPro ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Certificaciones / Cursos</h2>
+            <SectionHead
+              title="Cursos y certificados"
+              hint="Solo los que suman al puesto. Nombre, quién lo dio y año."
+              icon={<IconAward className="size-5" />}
+            />
             <button
               type="button"
               className="text-sm text-accent hover:underline"
@@ -599,10 +703,15 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
             </div>
           )}
         </section>
+        ) : null}
 
+        {showMedio ? (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-2xl">Idiomas</h2>
+            <SectionHead
+              title="Idiomas"
+              hint="Nivel real. Nativo, C1, B2… como en el marco europeo."
+            />
             <button
               type="button"
               className="text-sm text-accent hover:underline"
@@ -677,6 +786,7 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
             </div>
           )}
         </section>
+        ) : null}
 
         <div className="hidden lg:flex lg:flex-wrap lg:items-center lg:justify-between lg:gap-3 lg:rounded-2xl lg:border lg:border-line lg:bg-cream/95 lg:px-4 lg:py-3">
           <SaveBadge status={status} error={error} dirty={dirty} pdfStatus={pdfStatus} />
@@ -707,7 +817,10 @@ export function CvEditor({ cvId, initialTitle, initialData }: CvEditorProps) {
     </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-cream/95 px-4 py-3 backdrop-blur lg:hidden" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-        <SaveBadge status={status} error={error} dirty={dirty} pdfStatus={pdfStatus} />
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <SaveBadge status={status} error={error} dirty={dirty} pdfStatus={pdfStatus} />
+          <CvScoreBadge score={score} size="sm" />
+        </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <ExportPdfButton
             onClick={() => void handleExportPdf()}

@@ -1,22 +1,33 @@
+import Image from "next/image";
 import Link from "next/link";
+import {
+  IconBolt,
+  IconCloud,
+  IconGift,
+  IconShield,
+} from "@/components/icons";
 import { FAQ } from "@/components/json-ld";
 
 const REASONS = [
   {
     title: "Gratis, de verdad",
     text: "CV FORGE no cobra por crear, editar ni descargar tu currículum. Es un proyecto sin fines de lucro.",
+    Icon: IconGift,
   },
   {
     title: "Sin publicidad",
     text: "Nada de banners, pop-ups ni trackers de anuncios. Solo tú y tu CV.",
+    Icon: IconShield,
   },
   {
     title: "Con o sin cuenta",
     text: "Empieza al instante en este navegador. Si quieres no perderlo, entra con Google y lo guardamos en la nube.",
+    Icon: IconCloud,
   },
   {
     title: "Fácil de usar",
     text: "Elige una plantilla, rellena tus datos y exporta un PDF A4 profesional en minutos.",
+    Icon: IconBolt,
   },
 ];
 
@@ -54,13 +65,39 @@ export function LandingSeo() {
           {REASONS.map((item) => (
             <article
               key={item.title}
-              className="rounded-[1.4rem] border border-line bg-cream/80 p-5"
+              className="lift rounded-[1.4rem] border border-line bg-cream/80 p-5"
             >
+              <span className="mb-3 grid size-10 place-items-center rounded-2xl bg-accent/12 text-accent">
+                <item.Icon className="size-5" />
+              </span>
               <h3 className="font-serif text-xl">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 {item.text}
               </p>
             </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-4 sm:px-6">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-3 gap-3 overflow-hidden rounded-[1.6rem]">
+          {[
+            { src: "/login/hero.png", alt: "Persona revisando su currículum" },
+            { src: "/login/portrait.png", alt: "Candidato listo para entrevista" },
+            { src: "/login/desk.png", alt: "Escritorio de trabajo con CV" },
+          ].map((photo) => (
+            <figure
+              key={photo.src}
+              className="relative aspect-[4/3] overflow-hidden"
+            >
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                sizes="33vw"
+                className="object-cover transition-transform duration-700 hover:scale-105"
+              />
+            </figure>
           ))}
         </div>
       </section>
@@ -72,7 +109,7 @@ export function LandingSeo() {
           </h2>
           <ol className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((item) => (
-              <li key={item.n}>
+              <li key={item.n} className="lift rounded-[1.3rem] border border-line bg-paper/80 p-5">
                 <p className="text-xs font-medium tracking-[0.18em] text-accent">
                   {item.n}
                 </p>
@@ -85,7 +122,7 @@ export function LandingSeo() {
           </ol>
           <Link
             href="/dashboard"
-            className="mt-10 inline-flex min-h-12 items-center rounded-full bg-ink px-5 text-sm font-medium text-paper"
+            className="mt-10 inline-flex min-h-12 items-center rounded-full bg-solid px-5 text-sm font-medium text-on-solid"
           >
             Crear mi currículum ahora
           </Link>
